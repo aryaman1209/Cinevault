@@ -4,8 +4,16 @@ import Hero from "./components/Hero";
 import Row from "./components/Row";
 import SearchOverlay from "./components/SearchOverlay";
 import PlayerModal from "./components/PlayerModal";
-import { trending, discover, getGenres, searchMulti, getRecommendations, getVideos, PROVIDER_IDS } from "./api/tmdb";
-import { Sparkles } from "lucide-react";
+import {
+  trending,
+  discover,
+  getGenres,
+  searchMulti,
+  getRecommendations,
+  getVideos,
+  PROVIDER_IDS,
+} from "./api/tmdb";
+import { Sparkles, Play } from "lucide-react"; // ✅ Added Play import
 
 export default function App() {
   const [platform, setPlatform] = useState("All"); // "All" | "Netflix" | "Prime"
@@ -40,7 +48,10 @@ export default function App() {
   useEffect(() => {
     (async () => {
       try {
-        const [tr, g] = await Promise.all([trending("all", "week"), getGenres("movie")]);
+        const [tr, g] = await Promise.all([
+          trending("all", "week"),
+          getGenres("movie"),
+        ]);
         setTrendingNow(tr);
         setHeroItem(tr.find((t) => t.backdrop_path) || tr[0]);
         setGenres(g);
@@ -56,18 +67,24 @@ export default function App() {
       try {
         const [netM, netT] = await Promise.all([
           discover("movie", { providerId: PROVIDER_IDS.Netflix }),
-          discover("tv", { providerId: PROVIDER_IDS.Netflix })
+          discover("tv", { providerId: PROVIDER_IDS.Netflix }),
         ]);
         const [primeM, primeT] = await Promise.all([
           discover("movie", { providerId: PROVIDER_IDS.Prime }),
-          discover("tv", { providerId: PROVIDER_IDS.Prime })
+          discover("tv", { providerId: PROVIDER_IDS.Prime }),
         ]);
-        const net = [...netM, ...netT].map((x) => ({ ...x, platform: "Netflix" }));
-        const pr = [...primeM, ...primeT].map((x) => ({ ...x, platform: "Prime" }));
+        const net = [...netM, ...netT].map((x) => ({
+          ...x,
+          platform: "Netflix",
+        }));
+        const pr = [...primeM, ...primeT].map((x) => ({
+          ...x,
+          platform: "Prime",
+        }));
         setNetflixItems(net);
         setPrimeItems(pr);
         setAllItems([...net, ...pr]);
-        setAiPicks((prev) => prev.length ? prev : [...net, ...pr].slice(0, 10));
+        setAiPicks((prev) => (prev.length ? prev : [...net, ...pr].slice(0, 10)));
       } catch (err) {
         console.error("provider fetch", err);
       }
@@ -95,8 +112,13 @@ export default function App() {
 
   // helper: toggle my list
   function toggleMyList(item) {
-    const exists = myList.some((x) => x.id === item.id && x.platform === item.platform);
-    if (exists) setMyList((p) => p.filter((x) => !(x.id === item.id && x.platform === item.platform)));
+    const exists = myList.some(
+      (x) => x.id === item.id && x.platform === item.platform
+    );
+    if (exists)
+      setMyList((p) =>
+        p.filter((x) => !(x.id === item.id && x.platform === item.platform))
+      );
     else setMyList((p) => [...p, item]);
   }
 
@@ -104,7 +126,11 @@ export default function App() {
   async function handlePlay(item) {
     const type = item.media_type === "tv" ? "tv" : "movie";
     const videos = await getVideos(type, item.id);
-    const yt = videos.find((v) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"));
+    const yt = videos.find(
+      (v) =>
+        v.site === "YouTube" &&
+        (v.type === "Trailer" || v.type === "Teaser")
+    );
     if (yt) setPlayerUrl(`https://www.youtube.com/watch?v=${yt.key}`);
     else setPlayerUrl(null);
     setPlayerOpen(true);
@@ -113,11 +139,24 @@ export default function App() {
   // Filtered items for rows
   const filteredItems = useMemo(() => {
     let items = allItems.slice();
-    if (platform === "Netflix") items = items.filter((i) => i.platform === "Netflix");
-    if (platform === "Prime") items = items.filter((i) => i.platform === "Prime");
-    if (filterGenre) items = items.filter((i) => (i.genre_ids || []).includes(Number(filterGenre)));
-    if (filterYear) items = items.filter((i) => ((i.release_date || i.first_air_date || "").slice(0, 4)) === String(filterYear));
-    if (filterRating) items = items.filter((i) => (i.vote_average || 0) >= Number(filterRating));
+    if (platform === "Netflix")
+      items = items.filter((i) => i.platform === "Netflix");
+    if (platform === "Prime")
+      items = items.filter((i) => i.platform === "Prime");
+    if (filterGenre)
+      items = items.filter((i) =>
+        (i.genre_ids || []).includes(Number(filterGenre))
+      );
+    if (filterYear)
+      items = items.filter(
+        (i) =>
+          (i.release_date || i.first_air_date || "").slice(0, 4) ===
+          String(filterYear)
+      );
+    if (filterRating)
+      items = items.filter(
+        (i) => (i.vote_average || 0) >= Number(filterRating)
+      );
     return items;
   }, [allItems, platform, filterGenre, filterYear, filterRating]);
 
@@ -143,7 +182,9 @@ export default function App() {
         openSearch={() => setSearchOpen(true)}
         platform={platform}
         setPlatform={setPlatform}
-        openMyList={() => { /* handled below */ }}
+        openMyList={() => {
+          /* handled below */
+        }}
       />
 
       <main className="mx-auto max-w-7xl px-4 pb-20">
@@ -152,22 +193,44 @@ export default function App() {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold">Explore</h2>
-            <p className="text-xs text-zinc-400">Browse Netflix & Prime catalogs</p>
+            <p className="text-xs text-zinc-400">
+              Browse Netflix & Prime catalogs
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
             {/* Genre */}
-            <select value={filterGenre} onChange={(e) => setFilterGenre(e.target.value)} className="rounded-md bg-zinc-900 px-3 py-1 text-sm">
+            <select
+              value={filterGenre}
+              onChange={(e) => setFilterGenre(e.target.value)}
+              className="rounded-md bg-zinc-900 px-3 py-1 text-sm"
+            >
               <option value="">All Genres</option>
-              {genres.map((g) => (<option key={g.id} value={g.id}>{g.name}</option>))}
+              {genres.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
             </select>
             {/* Year */}
-            <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)} className="rounded-md bg-zinc-900 px-3 py-1 text-sm">
+            <select
+              value={filterYear}
+              onChange={(e) => setFilterYear(e.target.value)}
+              className="rounded-md bg-zinc-900 px-3 py-1 text-sm"
+            >
               <option value="">Any Year</option>
-              {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
             </select>
             {/* Rating */}
-            <select value={filterRating} onChange={(e) => setFilterRating(e.target.value)} className="rounded-md bg-zinc-900 px-3 py-1 text-sm">
+            <select
+              value={filterRating}
+              onChange={(e) => setFilterRating(e.target.value)}
+              className="rounded-md bg-zinc-900 px-3 py-1 text-sm"
+            >
               <option value="">Any Rating</option>
               <option value="9">9+</option>
               <option value="8">8+</option>
@@ -186,9 +249,29 @@ export default function App() {
             </div>
             <div className="no-scrollbar flex gap-4 overflow-x-auto pb-2">
               {aiRow.map((m) => (
-                <div key={`ai-${m.id}`} className="shrink-0 w-44">
-                  <img src={m.poster_path ? `https://image.tmdb.org/t/p/w342${m.poster_path}` : ""} alt={m.title || m.name} className="rounded-lg w-full h-[220px] object-cover" />
-                  <p className="mt-2 text-sm truncate">{m.title || m.name}</p>
+                <div
+                  key={`ai-${m.id}`}
+                  className="group relative shrink-0 w-44 cursor-pointer"
+                  onClick={() => handlePlay(m)}
+                >
+                  <img
+                    src={
+                      m.poster_path
+                        ? `https://image.tmdb.org/t/p/w342${m.poster_path}`
+                        : ""
+                    }
+                    alt={m.title || m.name}
+                    className="rounded-lg w-full h-[220px] object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+
+                  {/* Overlay Play Icon */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition rounded-lg">
+                    <Play className="h-10 w-10 text-white" />
+                  </div>
+
+                  <p className="mt-2 text-sm text-center truncate">
+                    {m.title || m.name}
+                  </p>
                 </div>
               ))}
             </div>
@@ -196,30 +279,72 @@ export default function App() {
         )}
 
         {/* Rows */}
-        <Row title="Trending Now" items={trendingRow} onToggleList={toggleMyList} listItems={myList} onPlay={handlePlay} />
-        <Row title="Netflix Picks" items={filteredItems.filter((i) => i.platform === "Netflix").slice(0, 20)} onToggleList={toggleMyList} listItems={myList} onPlay={handlePlay} />
-        <Row title="Prime Picks" items={filteredItems.filter((i) => i.platform === "Prime").slice(0, 20)} onToggleList={toggleMyList} listItems={myList} onPlay={handlePlay} />
+        <Row
+          title="Trending Now"
+          items={trendingRow}
+          onToggleList={toggleMyList}
+          listItems={myList}
+          onPlay={handlePlay}
+        />
+        <Row
+          title="Netflix Picks"
+          items={filteredItems
+            .filter((i) => i.platform === "Netflix")
+            .slice(0, 20)}
+          onToggleList={toggleMyList}
+          listItems={myList}
+          onPlay={handlePlay}
+        />
+        <Row
+          title="Prime Picks"
+          items={filteredItems
+            .filter((i) => i.platform === "Prime")
+            .slice(0, 20)}
+          onToggleList={toggleMyList}
+          listItems={myList}
+          onPlay={handlePlay}
+        />
 
         {/* Results grid fallback */}
         <section className="mt-6">
           <h3 className="mb-3 text-lg font-semibold">Results</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {filteredItems.slice(0, 18).map((i) => (
-              <div key={`${i.platform}-${i.id}`} className="rounded-md overflow-hidden bg-zinc-900/30">
-                <img src={i.poster_path ? `https://image.tmdb.org/t/p/w342${i.poster_path}` : ""} alt={i.title || i.name} className="w-full h-56 object-cover" />
+              <div
+                key={`${i.platform}-${i.id}`}
+                className="rounded-md overflow-hidden bg-zinc-900/30"
+              >
+                <img
+                  src={
+                    i.poster_path
+                      ? `https://image.tmdb.org/t/p/w342${i.poster_path}`
+                      : ""
+                  }
+                  alt={i.title || i.name}
+                  className="w-full h-56 object-cover"
+                />
               </div>
             ))}
           </div>
         </section>
       </main>
 
-      <PlayerModal open={playerOpen} onClose={() => setPlayerOpen(false)} youtubeUrl={playerUrl} />
+      <PlayerModal
+        open={playerOpen}
+        onClose={() => setPlayerOpen(false)}
+        youtubeUrl={playerUrl}
+      />
       <SearchOverlay
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         initialQuery={query}
-        onPlay={(item) => { setSearchOpen(false); handlePlay(item); }}
-        onAddToList={(item) => { toggleMyList(item); }}
+        onPlay={(item) => {
+          setSearchOpen(false);
+          handlePlay(item);
+        }}
+        onAddToList={(item) => {
+          toggleMyList(item);
+        }}
       />
     </div>
   );
