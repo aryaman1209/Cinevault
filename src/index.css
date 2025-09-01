@@ -2,7 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom helpers */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 body {
-  @apply bg-black text-white;
-  font-family: sans-serif;
+  background: #0b0b0d;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
