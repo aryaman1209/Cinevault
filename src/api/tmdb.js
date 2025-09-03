@@ -6,7 +6,11 @@ const REGION = import.meta.env.VITE_TMDB_REGION || "US";
 
 if (!API_KEY) console.warn("VITE_TMDB_KEY missing — add it to .env");
 
-export const IMG = (path, size = "w342") => (path ? `https://image.tmdb.org/t/p/${size}${path}` : "");
+export const IMG = (path, size = "w342") =>
+  path
+    ? `https://image.tmdb.org/t/p/${size}${path}`
+    : "https://via.placeholder.com/300x450?text=No+Image";
+
 
 const client = axios.create({
   baseURL: BASE,
@@ -26,7 +30,10 @@ export async function getGenres(type = "movie") {
 export async function trending(type = "all", time = "week") {
   try {
     const { data } = await client.get(`/trending/${type}/${time}`);
-    return data.results ?? [];
+    return (data.results ?? []).filter(
+  (r) => r.media_type === "movie" || r.media_type === "tv"
+);
+
   } catch (e) {
     console.error("trending", e);
     return [];
@@ -66,12 +73,15 @@ export async function searchMulti(query, page = 1) {
     const { data } = await client.get(`/search/multi`, {
       params: { query, page, include_adult: false, language: "en-US" }
     });
-    return data.results ?? [];
+    return (data.results ?? []).filter(
+      (r) => r.media_type === "movie" || r.media_type === "tv"
+    );
   } catch (e) {
     console.error("searchMulti", e);
     return [];
   }
 }
+
 
 export async function getRecommendations(type = "movie", id) {
   try {
